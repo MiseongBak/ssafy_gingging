@@ -1,0 +1,41 @@
+INSERT INTO `member_quest` (
+                      `goal`,
+                      `is_done`,
+                      `progress`,
+                      `created_at`,
+                      `member_id`,
+                      `member_pet_id`,
+                      `quest_id`,
+                      `updated_at`
+
+)
+VALUES (
+        3,
+        false,
+        0,
+        now(),
+        2,
+        2,
+        4,
+        now()
+),
+(
+        1,
+        false,
+        0,
+        now(),
+        2,
+        2,
+        1,
+        now()
+),
+(
+        7,
+        false,
+        0,
+        now(),
+        2,
+        2,
+        2,
+        now()
+);

@@ -1,0 +1,94 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver  # DB 드라이버
+    # 젠킨스 환경변수 추가
+    url: ${DB_URL}
+    username: ${DB_NAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop                # ddl 자동 작성 여부
+#          ddl-auto: update                # ddl 자동 작성 여부
+    properties:
+      hibernate:
+        dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+        format_sql: true             # 하이버네이트가 실행한 SQL을 출력할 때 보기 좋게 정렬
+        show_sql: true               # 하이버네이트가 실행한 SQL을 출력
+        jdbc:
+          batch_size: 100              #   insert/update 쿼리를 원하는 개수만큼 모아서 DB에 날릴 수 있는 옵션
+        default_batch_fetch_size: 100
+
+
+  data:
+    redis:
+      master:
+        host: ${REDIS_HOST}
+        port: 6379
+      slaves:
+        - host: ${REDIS_HOST}
+          port: 6380
+        - host: ${REDIS_HOST}
+          port: 6381
+  springdoc:
+    api-docs:
+      enabled: true
+      path: /v3/api-docs
+    swagger-ui:
+      path: /swagger-ui.html
+      configUrl: /v3/api-docs/swagger-config
+  jwt:
+    access: ${JWT_ACCESS}
+    refresh: ${JWT_REFRESH}
+    expired-min:
+      refresh-expiration: 14*60*60*1000
+      access-expiration: 14*60*60*1000
+
+#server:
+#  servlet:
+#    context-path: /api/v1
+
+  sql:
+    init:
+      mode: always
+      data-locations:
+        - 'classpath:/sql/data_pet.sql'
+        - 'classpath:/sql/data_quest.sql'
+        - 'classpath:/sql/data_achievement.sql'
+        - 'classpath:/sql/create_spatial_index.sql'
+        - 'classpath:/sql/data_member.sql'
+        - 'classpath:/sql/data_member_info.sql'
+        - 'classpath:/sql/data_member_pet.sql'
+        - 'classpath:/sql/data_member_achievement.sql'
+        - 'classpath:/sql/data_member_quest.sql'
+        - 'classpath:/sql/data_plogging.sql'
+        - 'classpath:/sql/data_trash.sql'
+        - 'classpath:/sql/data_notice.sql'
+        - 'classpath:/sql/data_plogging_route.sql'
+
+  jackson:
+     time-zone: Asia/Seoul
+
+server:
+  tomcat:
+    additional-tld-skip-patterns: org.apache.tomcat.util.scan.StandardJarScanner
+
+
+
+# AWS
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+
+# FLASK
+flask:
+  server-url: ${FLASK_SERVER_URL}

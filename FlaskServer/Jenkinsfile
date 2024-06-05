@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+    environment {
+        REPO = "s10-final/S10P31C206"
+        DOCKERHUB_REGISTRY = "kimhyeokil/ai"
+        DOCKERHUB_CREDENTIALS = credentials('Docker-hub')
+
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+
+            }
+        }
+        stage("Build") {
+            steps {
+                script {
+                    sh "docker build -t ${DOCKERHUB_REGISTRY} FlaskServer"
+                }
+            }
+        }
+        stage("Login") {
+            steps {
+                 sh "echo \${DOCKERHUB_CREDENTIALS_PSW} | docker login -u \${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+            }
+        }
+        stage("Tag and Push") {
+            steps {
+                script {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'Docker-hub', usernameVariable: 'DOCKER_USER_ID', passwordVariable: 'DOCKER_USER_PASSWORD']]) {
+                        sh "docker push ${DOCKERHUB_REGISTRY}"
+                    }
+                }
+            }
+        }
+        stage('Prune old images'){
+            steps{
+                script{
+                    sh "docker ps"
+                }
+            }
+        }
+        stage('Pull') {
+            steps {
+                script {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'Docker-hub', usernameVariable: 'DOCKER_USER_ID', passwordVariable: 'DOCKER_USER_PASSWORD']]) {
+                        sh "docker stop ai || true"  // Ignore error ifgit  container doesn't exist
+                        sh "docker rm ai || true"    // Ignore error if container doesn't exist
+                        sh "docker rmi ${DOCKERHUB_REGISTRY}|| true"     //images 날리기
+                        sh "docker pull ${DOCKERHUB_REGISTRY}"
+                    }
+                }
+            }
+        }
+        stage('Up') {
+            steps {
+                script {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'Docker-hub', usernameVariable: 'DOCKER_USER_ID', passwordVariable: 'DOCKER_USER_PASSWORD']]) {
+                        try {
+                        sh "docker run -d --name ai -p 9002:5000 \
+                        ${DOCKERHUB_REGISTRY}"
+//                             sh "docker-compose -f ${env.WORKSPACE}/docker-compose.yml up -d"
+
+                        } catch(Exception e) {
+                            sh "docker restart ai || true"  // Ignore error if container doesn't exist
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
+}
